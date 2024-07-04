@@ -1,0 +1,54 @@
+
+---
+- name: create a single vm from template 
+  hosts: localhost
+  become: false
+  gather_facts: false
+  
+  vars_files:
+    - singlevmvars.yml
+    - password.yml
+  
+  tasks:
+  - name:  Clone a virtual machine from Linux template and customize
+    community.vmware.vmware_guest:
+      hostname: "{{ vcenter_hostname }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      datacenter: "{{ datacenter }}"
+      state: poweredon
+      folder: "{{ folder }}"
+      template: "{{ template }}"
+      name: "{{ vm_name }}"
+      cluster: "{{ cluster }}"
+      datastore: "{{ datastore }}"
+      disk:
+        - size_gb: "{{ data_disk_size }}"
+          type: thin
+          datastore: "{{ datastore }}"
+      hardware:
+        memory_mb: "{{ memory }}"
+        num_cpus: "{{ cpu_cores }}"
+        num_cpu_cores_per_socket: "{{ cpu_cores }}"
+        scsi: paravirtual
+        hotadd_cpu: true
+        hotremove_cpu: true
+        hotadd_memory: false
+        version: 12 # Hardware version of virtual machine            
+      networks:
+        - name: "{{ network }}"
+          ip: "{{ ip_address }}"
+          netmask: "{{ netmask }}"
+          gateway: "{{ gateway }}"
+      wait_for_ip_address: true
+      customization:
+        domain: "{{ guest_domain }}"
+        dns_servers:
+          - "{{ dns_server1 }}"
+        dns_suffix:
+          - "{{ dns_suffix }}"
+        script_text: |
+          #!/bin/bash
+          touch /tmp/touch-from-playbook
+    register: deploy_vm
+    # delegate_to: localhost
