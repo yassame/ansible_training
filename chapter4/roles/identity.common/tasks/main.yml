@@ -1,0 +1,4 @@
+---
+# tasks file for identity.common
+- name: Make sure you can connect
+  ansible.builtin.ping:

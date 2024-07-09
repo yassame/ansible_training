@@ -1,0 +1,52 @@
+---
+# tasks file for identity.mysql
+- name: Install php-mysql
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - mysql-server
+    - python3-mysqldb
+- name: Generate new root password
+  ansible.builtin.command: 
+    cmd: openssl rand -hex 7
+    creates: /root/.my.cnf
+  register: mysql_new_root_pass
+- name: New root password is created
+  # If /root/.my.cnf doesn't exist and the command is run
+  ansible.builtin.debug: 
+    msg: New root password is {{mysql_new_root_pass.stdout}}
+  when: mysql_new_root_pass.changed
+- name: Output new root password
+  # If /root/.my.cnf exists and the command is not run
+  ansible.builtin.debug: 
+    msg: No change to root password
+  when: mysql_new_root_pass.changed
+- name: Removes all anonymous user accounts
+  community.mysql.mysql_user:
+    name: ''
+    host_all: true
+    state: absent
+  when: mysql_new_root_pass.changed
+- name: Make sure there is no database with name test
+  community.mysql.mysql_db:
+    name: test
+    state: absent
+  when: mysql_new_root_pass.changed
+- name: Update root password
+  community.mysql.mysql_user: 
+    name: root 
+    host: "{{ item }}"
+    password: "{{mysql_new_root_pass.stdout}}"
+    # password_expire: never
+  with_items:
+  - "{{ ansible_hostname}}"
+  - 127.0.0.1
+  - ::1
+  - localhost
+  when: mysql_new_root_pass.changed
+- name: Template a file to /root/.my.cnf
+  ansible.builtin.template:
+    src: my.cnf
+    dest: /root/.my.cnf
+  when: mysql_new_root_pass.changed

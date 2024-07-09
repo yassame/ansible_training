@@ -1,0 +1,4 @@
+[web]
+testserver[2:3].automation.local
+[db]
+testserver1.automation.local

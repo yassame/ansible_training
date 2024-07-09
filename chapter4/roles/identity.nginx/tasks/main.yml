@@ -1,0 +1,16 @@
+---
+# tasks file for identity.nginx
+- name: Install Nginx
+  ansible.builtin.package:
+    name: nginx
+    state: latest
+- name: Start service nginx
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: yes
+- name: Template a file to /etc/nginx/sitesavailable/default
+  ansible.builtin.template:
+    src: default
+    dest: /etc/nginx/sites-available/default
+  notify: restart nginx

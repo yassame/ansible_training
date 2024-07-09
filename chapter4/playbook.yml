@@ -1,0 +1,10 @@
+---
+- hosts: db
+  become: true
+  roles:
+    # Included only identity.wordpress role as other tasks are defined in the dependency of wordpress in meta/main.yml
+    # - identity.common
+    # - identity.php
+    # - identity.mysql
+    # - identity.nginx
+    - identity.wordpress

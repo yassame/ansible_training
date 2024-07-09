@@ -1,0 +1,23 @@
+---
+# tasks file for identity.php
+#to include tasks from other files
+# - include: 'php.yml'
+# - include: 'extensions.yml'
+
+- include_tasks: update-debian.yml
+  when: ansible_os_family == "Debian"
+- include_tasks: update-centos.yml
+  when: ansible_os_family == "RedHat"
+- name: Install php
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - php
+    - php-fpm
+    - php-mysql
+    - php-xml
+- name: Remove apache
+  ansible.builtin.package:
+    name: apache2
+    state: absent
